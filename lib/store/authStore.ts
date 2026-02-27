@@ -13,41 +13,64 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       twoFactorRequired: false,
 
+      // ==========================
+      // LOGIN
+      // ==========================
       login: async (email: string, password: string) => {
         set({ isLoading: true });
-        try {
-          const response = await apiClient.post("/auth/login", { email, password });
-          const { token, user, requires2FA, tempToken } = response.data;
 
+        try {
+          const { data } = await apiClient.post("/auth/login", {
+            email,
+            password,
+          });
+
+          const { token, user, requires2FA, tempToken } = data;
+
+          // ---- Handle 2FA Required ----
           if (requires2FA) {
-            // Store temp token for 2FA verification
             if (tempToken) {
               localStorage.setItem("tempToken", tempToken);
               localStorage.setItem("pendingUser", JSON.stringify(user));
             }
-            set({ twoFactorRequired: true, isLoading: false });
+
+            set({
+              twoFactorRequired: true,
+              isLoading: false,
+            });
+
             return { requires2FA: true };
           }
 
+          // ---- Normal Login ----
           set({
             user,
             token,
             isAuthenticated: true,
-            isLoading: false,
             twoFactorRequired: false,
+            isLoading: false,
           });
-          apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+          toast.success("Login successful!");
           return { requires2FA: false };
         } catch (error: any) {
           set({ isLoading: false });
-          const message = error.response?.data?.message || "Login failed. Please try again.";
+
+          const message =
+            error.response?.data?.message ||
+            "Login failed. Please try again.";
+
           toast.error(message);
           throw error;
         }
       },
 
+      // ==========================
+      // SIGNUP
+      // ==========================
       signup: async (data: SignupData) => {
         set({ isLoading: true });
+
         try {
           const response = await apiClient.post("/auth/signup", data);
           const { token, user, requires2FA, tempToken } = response.data;
@@ -57,7 +80,12 @@ export const useAuthStore = create<AuthState>()(
               localStorage.setItem("tempToken", tempToken);
               localStorage.setItem("pendingUser", JSON.stringify(user));
             }
-            set({ twoFactorRequired: true, isLoading: false });
+
+            set({
+              twoFactorRequired: true,
+              isLoading: false,
+            });
+
             return;
           }
 
@@ -67,26 +95,46 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
             isLoading: false,
           });
-          apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-          toast.success("Account created successfully! Welcome aboard.");
+
+          toast.success("Account created successfully!");
         } catch (error: any) {
           set({ isLoading: false });
-          const message = error.response?.data?.message || "Signup failed. Please try again.";
+
+          const message =
+            error.response?.data?.message ||
+            "Signup failed. Please try again.";
+
           toast.error(message);
           throw error;
         }
       },
 
+      // ==========================
+      // VERIFY 2FA
+      // ==========================
       verify2FA: async (code: string) => {
         set({ isLoading: true });
+
         try {
           const tempToken = localStorage.getItem("tempToken");
-          const response = await apiClient.post(
+
+          if (!tempToken) {
+            set({ isLoading: false });
+            toast.error("Session expired. Please login again.");
+            throw new Error("Temp token missing");
+          }
+
+          const { data } = await apiClient.post(
             "/auth/verify-2fa",
             { code },
-            { headers: { Authorization: `Bearer ${tempToken}` } }
+            {
+              headers: {
+                Authorization: `Bearer ${tempToken}`,
+              },
+            }
           );
-          const { token, user } = response.data;
+
+          const { token, user } = data;
 
           localStorage.removeItem("tempToken");
           localStorage.removeItem("pendingUser");
@@ -95,46 +143,69 @@ export const useAuthStore = create<AuthState>()(
             user,
             token,
             isAuthenticated: true,
-            isLoading: false,
             twoFactorRequired: false,
+            isLoading: false,
           });
-          apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
           toast.success("Authentication successful!");
         } catch (error: any) {
           set({ isLoading: false });
-          const message = error.response?.data?.message || "Invalid code. Please try again.";
+
+          const message =
+            error.response?.data?.message ||
+            "Invalid verification code.";
+
           toast.error(message);
           throw error;
         }
       },
 
+      // ==========================
+      // LOGOUT
+      // ==========================
       logout: () => {
+        localStorage.removeItem("tempToken");
+        localStorage.removeItem("pendingUser");
+
         set({
           user: null,
           token: null,
           isAuthenticated: false,
           twoFactorRequired: false,
         });
-        delete apiClient.defaults.headers.common["Authorization"];
-        localStorage.removeItem("tempToken");
-        localStorage.removeItem("pendingUser");
+
         toast.success("Logged out successfully");
       },
 
+      // ==========================
+      // UPDATE USER
+      // ==========================
       updateUser: (userData: Partial<User>) => {
         const currentUser = get().user;
-        if (currentUser) {
-          set({ user: { ...currentUser, ...userData } });
-        }
+
+        if (!currentUser) return;
+
+        set({
+          user: { ...currentUser, ...userData },
+        });
       },
     }),
     {
       name: "kpt-auth-store",
+
+      // Only persist essential auth data
       partialize: (state) => ({
         user: state.user,
         token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
+
+      // Optional: run when store rehydrates
+      onRehydrateStorage: () => (state) => {
+        if (state?.token) {
+          state.isAuthenticated = true;
+        }
+      },
     }
   )
 );

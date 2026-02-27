@@ -6,6 +6,8 @@ import { Shield, Smartphone, CheckCircle2, Crown, RefreshCw, Copy } from "lucide
 import { useAuthStore } from "@/lib/store/authStore";
 import { apiClient } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
+import Logo from "@/assets/logo.png";
 import toast from "react-hot-toast";
 
 export default function TwoFactorPage() {
@@ -107,7 +109,7 @@ export default function TwoFactorPage() {
         {/* Logo */}
         <div className="flex items-center justify-center gap-3 mb-10">
           <div className="w-10 h-10 rounded-xl btn-glow flex items-center justify-center">
-            <Crown size={20} className="text-white" />
+           <Image src={Logo} alt="Logo" width={60} height={60} />
           </div>
           <span className="font-display font-bold text-xl text-white">King Praise Techz</span>
         </div>
