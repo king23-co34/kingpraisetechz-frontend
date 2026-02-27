@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-
+import Image from "next/image"
 import Logo from "@/assets/logo.png";
 import {
  Shield, Eye, EyeOff, ArrowRight, ArrowLeft, Zap, Users, CheckCircle2, Crown,
