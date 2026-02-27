@@ -25,13 +25,13 @@ export default function Hero() {
           </p>
           <div className="flex justify-center lg:justify-start gap-4 flex-wrap">
             <Link
-              href="/onboarding"
+              href="/auth/signup"
               className="px-8 py-4 bg-blue-500 text-white rounded-full font-bold hover:bg-blue-600 transition"
             >
               Get Started
             </Link>
             <Link
-              href="/login"
+              href="/auth/login"
               className="px-8 py-4 border border-red-500 text-red-500 rounded-full hover:bg-red-500/10 transition"
             >
               Login
