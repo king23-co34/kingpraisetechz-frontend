@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
 
 interface Props {
   open: boolean;
