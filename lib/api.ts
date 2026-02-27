@@ -108,6 +108,12 @@ export const projectsAPI = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+  // ✅ Added function to fix your build
+  updateMilestone: (projectId: string, milestoneId: string, data: any) =>
+    fetchWithAuth(`/projects/${projectId}/milestones/${milestoneId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
 };
 
 export const reviewsAPI = {
