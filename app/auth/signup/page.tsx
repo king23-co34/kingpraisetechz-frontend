@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
-  Eye, EyeOff, ArrowRight, ArrowLeft, Zap, Users, CheckCircle2, Crown,
+ Shield, Eye, EyeOff, ArrowRight, ArrowLeft, Zap, Users, CheckCircle2, Crown,
   Building2, Phone, Code, Palette, Globe, Database, LayoutDashboard, MessageSquare
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
