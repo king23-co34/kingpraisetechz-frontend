@@ -1,25 +1,63 @@
 // lib/api.ts
 
+import axios from "axios";
+
+// ===================================
+// BASE URL
+// ===================================
+
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "https://king-praise-techz-backend.onrender.com/api";
 
-// ==============================
-// AUTH FETCH WRAPPER
-// ==============================
+// ===================================
+// AXIOS CLIENT (Restored for legacy usage)
+// ===================================
+
+export const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 30000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Attach token automatically (client-side only)
+apiClient.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const authStorage = localStorage.getItem("kpt-auth-store");
+    if (authStorage) {
+      try {
+        const parsed = JSON.parse(authStorage);
+        const token = parsed?.state?.token;
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      } catch {}
+    }
+  }
+  return config;
+});
+
+// ===================================
+// AUTH FETCH WRAPPER (Modern system)
+// ===================================
 
 export const fetchWithAuth = async (
   url: string,
   options: RequestInit = {}
 ) => {
-  const authStorage = localStorage.getItem("kpt-auth-store");
   let token: string | null = null;
 
-  if (authStorage) {
-    try {
-      const parsed = JSON.parse(authStorage);
-      token = parsed?.state?.token || null;
-    } catch {}
+  // Prevent SSR crash
+  if (typeof window !== "undefined") {
+    const authStorage = localStorage.getItem("kpt-auth-store");
+    if (authStorage) {
+      try {
+        const parsed = JSON.parse(authStorage);
+        token = parsed?.state?.token || null;
+      } catch {}
+    }
   }
 
   const headers: HeadersInit = {
@@ -34,7 +72,7 @@ export const fetchWithAuth = async (
   });
 
   if (!res.ok) {
-    if (res.status === 401) {
+    if (res.status === 401 && typeof window !== "undefined") {
       localStorage.removeItem("kpt-auth-store");
       window.location.href = "/auth/login";
     }
@@ -44,9 +82,9 @@ export const fetchWithAuth = async (
   return res.json();
 };
 
-// ==============================
+// ===================================
 // API MODULES
-// ==============================
+// ===================================
 
 export const projectsAPI = {
   getAll: () => fetchWithAuth("/projects"),
