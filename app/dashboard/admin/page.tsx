@@ -36,12 +36,13 @@ export default function AdminDashboard() {
     const fetchData = async () => {
       try {
         const [statsRes, projectsRes, reviewsRes] = await Promise.all([
-          dashboardAPI.getStats("admin"),
-          projectsAPI.getAll({ limit: 5, status: "in-progress" }),
+          dashboardAPI.getStats(),
+          projectsAPI.getAll(),
           reviewsAPI.getAll(),
         ]);
         setStats(statsRes.data);
-        setProjects(projectsRes.data.projects || []);
+        const allProjects = projectsRes.data.projects || [];
+        setProjects(allProjects.filter((p: Project) => p.status === "in-progress").slice(0, 5));
         const reviews = reviewsRes.data.reviews || [];
         setPendingReviews(reviews.filter((r: Review) => r.status === "pending").slice(0, 3));
       } catch {

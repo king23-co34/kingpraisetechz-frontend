@@ -69,7 +69,7 @@ export default function AdminProjectsPage() {
 
   const fetchProjects = async () => {
     try {
-      const res = await projectsAPI.getAll({ status: statusFilter || undefined });
+      const res = await projectsAPI.getAll();
       setProjects(res.data.projects || []);
     } catch {
       setProjects([]);

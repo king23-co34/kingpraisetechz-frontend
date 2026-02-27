@@ -103,6 +103,11 @@ export const projectsAPI = {
     fetchWithAuth(`/projects/${id}`, {
       method: "DELETE",
     }),
+  uploadMilestone: (id: string, data: any) =>
+    fetchWithAuth(`/projects/${id}/milestones`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 };
 
 export const reviewsAPI = {
@@ -112,11 +117,28 @@ export const reviewsAPI = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+  approve: (id: string) =>
+    fetchWithAuth(`/reviews/${id}/approve`, {
+      method: "POST",
+    }),
+  reject: (id: string) =>
+    fetchWithAuth(`/reviews/${id}/reject`, {
+      method: "POST",
+    }),
 };
 
 export const teamAPI = {
   getAll: () => fetchWithAuth("/team"),
   getById: (id: string) => fetchWithAuth(`/team/${id}`),
+  promoteToAdmin: (id: string, data: any) =>
+    fetchWithAuth(`/team/${id}/promote`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  revokeAdmin: (id: string) =>
+    fetchWithAuth(`/team/${id}/revoke-admin`, {
+      method: "POST",
+    }),
 };
 
 export const tasksAPI = {
@@ -130,6 +152,10 @@ export const tasksAPI = {
 
 export const notificationsAPI = {
   getAll: () => fetchWithAuth("/notifications"),
+  markAllRead: () =>
+    fetchWithAuth("/notifications/mark-all-read", {
+      method: "POST",
+    }),
 };
 
 export const dashboardAPI = {
