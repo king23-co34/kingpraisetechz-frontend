@@ -36,13 +36,13 @@ export default function Navbar() {
             <Link href="#pricing" className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-red-500 hover:from-red-500 hover:to-orange-400 transition">
               Pricing
             </Link>
-            <Link href="/login" className="bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-red-500 hover:from-red-500 hover:to-pink-400 transition">
+            <Link href="/auth/login" className="bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-red-500 hover:from-red-500 hover:to-pink-400 transition">
               Login
             </Link>
 
             {/* CTA Buttons */}
             <Link
-              href="/onboarding"
+              href="/auth/signup"
               className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full hover:from-pink-500 hover:to-red-500 transition duration-300 shadow-md hover:shadow-lg"
             >
               Get Started
@@ -75,10 +75,10 @@ export default function Navbar() {
             <Link href="#pricing" className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-red-500 hover:from-red-500 hover:to-orange-400 transition">
               Pricing
             </Link>
-            <Link href="/login" className="bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-red-500 hover:from-red-500 hover:to-pink-400 transition">
+            <Link href="/auth/login" className="bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-red-500 hover:from-red-500 hover:to-pink-400 transition">
               Login
             </Link>
-            <Link href="/onboarding" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center px-5 py-2 rounded-full hover:from-pink-500 hover:to-red-500 transition">
+            <Link href="/auth/signup" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center px-5 py-2 rounded-full hover:from-pink-500 hover:to-red-500 transition">
               Get Started
             </Link>
 
