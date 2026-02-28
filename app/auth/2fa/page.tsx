@@ -1,8 +1,9 @@
 "use client";
+
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Shield, Smartphone, CheckCircle2, Crown, RefreshCw, Copy } from "lucide-react";
+import { Shield, Smartphone, CheckCircle2, RefreshCw, Copy } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { apiClient } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -24,9 +25,8 @@ export default function TwoFactorPage() {
 
   useEffect(() => {
     if (isSetup) {
-      // Fetch QR code for setup
       apiClient.post("/auth/setup-2fa")
-        .then((res) => {
+        .then(res => {
           setQrCode(res.data.qrCode);
           setSecret(res.data.secret);
         })
@@ -35,24 +35,19 @@ export default function TwoFactorPage() {
   }, [isSetup]);
 
   const handleInput = (index: number, value: string) => {
+    const newCode = [...code];
     if (value.length > 1) {
       // Paste handling
-      const chars = value.slice(0, 6).split("");
-      const newCode = [...code];
-      chars.forEach((char, i) => {
+      value.slice(0, 6).split("").forEach((char, i) => {
         if (index + i < 6) newCode[index + i] = char;
       });
       setCode(newCode);
-      inputRefs.current[Math.min(index + chars.length, 5)]?.focus();
+      inputRefs.current[Math.min(index + value.length, 5)]?.focus();
       return;
     }
-
-    const newCode = [...code];
     newCode[index] = value;
     setCode(newCode);
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
+    if (value && index < 5) inputRefs.current[index + 1]?.focus();
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
@@ -67,24 +62,18 @@ export default function TwoFactorPage() {
 
     try {
       if (isSetup) {
-        // Enable 2FA
         await apiClient.post("/auth/enable-2fa", { code: fullCode });
         toast.success("2FA enabled successfully!");
-        if (user) {
-          router.push(`/dashboard/${user.role}`);
-        } else {
-          router.push("/auth/login");
-        }
+        router.push(user ? `/dashboard/${user.role}` : "/auth/login");
       } else {
         await verify2FA(fullCode);
         const { user: currentUser } = useAuthStore.getState();
-        if (currentUser) {
-          router.push(`/dashboard/${currentUser.role}`);
-        }
+        if (currentUser) router.push(`/dashboard/${currentUser.role}`);
       }
     } catch {
       setCode(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
+      toast.error("Invalid 2FA code");
     }
   };
 
@@ -97,19 +86,17 @@ export default function TwoFactorPage() {
     <div className="min-h-screen flex items-center justify-center p-6">
       {/* Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full" style={{ background: "radial-gradient(circle, rgba(26,77,255,0.08) 0%, transparent 70%)" }} />
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full" style={{ background: "radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%)" }} />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full"
+             style={{ background: "radial-gradient(circle, rgba(26,77,255,0.08) 0%, transparent 70%)" }} />
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full"
+             style={{ background: "radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%)" }} />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md relative z-10"
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md relative z-10">
         {/* Logo */}
         <div className="flex items-center justify-center gap-3 mb-10">
           <div className="w-10 h-10 rounded-xl btn-glow flex items-center justify-center">
-           <Image src={Logo} alt="Logo" width={60} height={60} />
+            <Image src={Logo} alt="Logo" width={60} height={60} />
           </div>
           <span className="font-display font-bold text-xl text-white">King Praise Techz</span>
         </div>
@@ -117,7 +104,8 @@ export default function TwoFactorPage() {
         <div className="glass-card p-8">
           {/* Icon */}
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-brand-500/15 border border-brand-500/30 flex items-center justify-center" style={{ boxShadow: "0 0 30px rgba(26,77,255,0.3)" }}>
+            <div className="w-16 h-16 rounded-2xl bg-brand-500/15 border border-brand-500/30 flex items-center justify-center" 
+                 style={{ boxShadow: "0 0 30px rgba(26,77,255,0.3)" }}>
               <Shield size={28} className="text-brand-400" />
             </div>
           </div>
@@ -132,14 +120,9 @@ export default function TwoFactorPage() {
 
               {setupStep === 1 ? (
                 <>
-                  <h2 className="font-display font-bold text-2xl text-white text-center mb-2">
-                    Set up Two-Factor Auth
-                  </h2>
-                  <p className="text-slate-400 text-sm text-center mb-6">
-                    Scan this QR code with Google Authenticator to secure your account
-                  </p>
+                  <h2 className="font-display font-bold text-2xl text-white text-center mb-2">Set up Two-Factor Auth</h2>
+                  <p className="text-slate-400 text-sm text-center mb-6">Scan this QR code with Google Authenticator</p>
 
-                  {/* QR Code */}
                   <div className="flex justify-center mb-6">
                     {qrCode ? (
                       <div className="p-4 bg-white rounded-2xl">
@@ -150,22 +133,6 @@ export default function TwoFactorPage() {
                         <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
                       </div>
                     )}
-                  </div>
-
-                  {/* Steps */}
-                  <div className="space-y-3 mb-6">
-                    {[
-                      "Install Google Authenticator on your phone",
-                      "Open the app and tap the '+' button",
-                      "Select 'Scan QR code' and scan the code above",
-                    ].map((instruction, idx) => (
-                      <div key={idx} className="flex items-start gap-3">
-                        <div className="w-6 h-6 rounded-full bg-brand-500/20 border border-brand-500/30 flex items-center justify-center text-xs font-bold text-brand-400 shrink-0 mt-0.5">
-                          {idx + 1}
-                        </div>
-                        <p className="text-slate-300 text-sm">{instruction}</p>
-                      </div>
-                    ))}
                   </div>
 
                   {/* Manual entry */}
@@ -187,25 +154,19 @@ export default function TwoFactorPage() {
                     onClick={() => setSetupStep(2)}
                     className="w-full py-3.5 rounded-xl font-semibold text-white btn-glow flex items-center justify-center gap-2"
                   >
-                    I've scanned the code
-                    <Smartphone size={16} />
+                    I've scanned the code <Smartphone size={16} />
                   </motion.button>
                 </>
               ) : (
                 <>
-                  <h2 className="font-display font-bold text-2xl text-white text-center mb-2">
-                    Verify Setup
-                  </h2>
-                  <p className="text-slate-400 text-sm text-center mb-8">
-                    Enter the 6-digit code from Google Authenticator to confirm
-                  </p>
+                  <h2 className="font-display font-bold text-2xl text-white text-center mb-2">Verify Setup</h2>
+                  <p className="text-slate-400 text-sm text-center mb-8">Enter the 6-digit code from Google Authenticator</p>
 
-                  {/* OTP Input */}
                   <div className="flex justify-center gap-3 mb-8">
                     {code.map((digit, idx) => (
                       <input
                         key={idx}
-                        ref={(el) => { inputRefs.current[idx] = el; }}
+                        ref={(el) => (inputRefs.current[idx] = el)}
                         type="text"
                         inputMode="numeric"
                         maxLength={6}
@@ -244,18 +205,14 @@ export default function TwoFactorPage() {
           ) : (
             <>
               {/* Verify flow */}
-              <h2 className="font-display font-bold text-2xl text-white text-center mb-2">
-                Two-Factor Authentication
-              </h2>
-              <p className="text-slate-400 text-sm text-center mb-8">
-                Enter the 6-digit code from your Google Authenticator app
-              </p>
+              <h2 className="font-display font-bold text-2xl text-white text-center mb-2">Two-Factor Authentication</h2>
+              <p className="text-slate-400 text-sm text-center mb-8">Enter the 6-digit code from your Google Authenticator app</p>
 
               <div className="flex justify-center gap-3 mb-8">
                 {code.map((digit, idx) => (
                   <input
                     key={idx}
-                    ref={(el) => { inputRefs.current[idx] = el; }}
+                    ref={(el) => (inputRefs.current[idx] = el)}
                     type="text"
                     inputMode="numeric"
                     maxLength={6}
@@ -287,9 +244,7 @@ export default function TwoFactorPage() {
 
               <div className="flex items-center justify-center gap-2 mt-4">
                 <RefreshCw size={14} className="text-slate-500" />
-                <p className="text-sm text-slate-400">
-                  Code refreshes every 30 seconds
-                </p>
+                <p className="text-sm text-slate-400">Code refreshes every 30 seconds</p>
               </div>
             </>
           )}
