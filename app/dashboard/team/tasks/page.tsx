@@ -24,7 +24,7 @@ export default function TeamTasksPage() {
 
   const fetchTasks = async () => {
     try {
-      const res = await tasksAPI.getMyTasks();
+      const res = await tasksAPI.getAll();
       setTasks(res.data.tasks || []);
     } catch {
       setTasks([]);
@@ -42,7 +42,7 @@ export default function TeamTasksPage() {
       formData.append("url", submitForm.url);
       if (file) formData.append("file", file);
 
-      await tasksAPI.submitDeliverable(selectedTask.id, formData);
+      await tasksAPI.update(selectedTask.id, formData);
       toast.success("Deliverable submitted! Admin has been notified.");
       setShowSubmitModal(false);
       setSelectedTask(null);

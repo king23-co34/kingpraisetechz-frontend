@@ -3,8 +3,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import Image from "next/image"
-import Logo from "@/assets/logo.png";
 import {
  Shield, Eye, EyeOff, ArrowRight, ArrowLeft, Zap, Users, CheckCircle2, Crown,
   Building2, Phone, Code, Palette, Globe, Database, LayoutDashboard, MessageSquare
@@ -108,7 +106,7 @@ export default function SignupPage() {
         <div className="relative z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl btn-glow flex items-center justify-center">
-              <Image src={Logo} alt="Logo" width={60} height={60} />
+              <Crown size={20} className="text-white" />
             </div>
             <span className="font-display font-bold text-xl text-white">King Praise Techz</span>
           </div>

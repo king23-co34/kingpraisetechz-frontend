@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Eye, EyeOff, ArrowRight, Shield, Zap, Crown, Users, ChevronLeft } from "lucide-react";
@@ -99,7 +98,7 @@ export default function LoginPage() {
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-xl btn-glow flex items-center justify-center">
-             <Image src={Logo} alt="Logo" width={60} height={60} />
+              <Crown size={20} className="text-white" />
             </div>
             <span className="font-display font-bold text-xl text-white">King Praise Techz</span>
           </div>

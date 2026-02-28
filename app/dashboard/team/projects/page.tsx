@@ -12,7 +12,7 @@ export default function TeamProjectsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    tasksAPI.getMyTasks()
+    tasksAPI.getAll()
       .then((res) => setTasks(res.data.tasks || []))
       .catch(() => setTasks([]))
       .finally(() => setLoading(false));
