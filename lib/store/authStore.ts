@@ -72,7 +72,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
 
         try {
-          const response = await apiClient.post("/auth/signup", data);
+          const response = await apiClient.post("/auth/register", data);
           const { token, user, requires2FA, tempToken } = response.data;
 
           if (requires2FA) {
