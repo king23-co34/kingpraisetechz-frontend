@@ -23,9 +23,9 @@ export default function TwoFactorPage() {
   const [secret, setSecret] = useState<string>("");
   const [setupStep, setSetupStep] = useState<1 | 2>(1);
 
-  const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  // Fix for build: correctly type refs
+  const inputRefs = useRef<HTMLInputElement[]>([]);
 
-  // Only run client-side setup
   useEffect(() => {
     if (isSetup) {
       apiClient
@@ -37,7 +37,7 @@ export default function TwoFactorPage() {
         })
         .catch(() => toast.error("Failed to initialize 2FA setup"));
     } else {
-      setSetupStep(2); // just show input for normal verification
+      setSetupStep(2);
     }
   }, [isSetup]);
 
@@ -125,7 +125,7 @@ export default function TwoFactorPage() {
             {code.map((digit, idx) => (
               <input
                 key={idx}
-                ref={(el) => (inputRefs.current[idx] = el)}
+                ref={(el) => (inputRefs.current[idx] = el!)}
                 type="text"
                 inputMode="numeric"
                 maxLength={1}
