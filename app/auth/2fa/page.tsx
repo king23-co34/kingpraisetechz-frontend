@@ -17,16 +17,19 @@ export default function TwoFactorPage() {
   const isSetup = searchParams.get("setup") === "true";
   const { verify2FA, user, isLoading } = useAuthStore();
 
-  const [code, setCode] = useState(["", "", "", "", "", ""]);
-  const [qrCode, setQrCode] = useState("");
-  const [secret, setSecret] = useState("");
+  const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
+  const [qrCode, setQrCode] = useState<string>("");
+  const [secret, setSecret] = useState<string>("");
   const [setupStep, setSetupStep] = useState<1 | 2>(1);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // ✅ Properly typed ref array
+  const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   useEffect(() => {
     if (isSetup) {
-      apiClient.post("/auth/setup-2fa")
-        .then(res => {
+      apiClient
+        .post("/auth/2fa/setup")
+        .then((res) => {
           setQrCode(res.data.qrCode);
           setSecret(res.data.secret);
         })
@@ -36,21 +39,32 @@ export default function TwoFactorPage() {
 
   const handleInput = (index: number, value: string) => {
     const newCode = [...code];
+
     if (value.length > 1) {
-      // Paste handling
-      value.slice(0, 6).split("").forEach((char, i) => {
-        if (index + i < 6) newCode[index + i] = char;
-      });
+      value
+        .slice(0, 6)
+        .split("")
+        .forEach((char, i) => {
+          if (index + i < 6) newCode[index + i] = char;
+        });
+
       setCode(newCode);
       inputRefs.current[Math.min(index + value.length, 5)]?.focus();
       return;
     }
+
     newCode[index] = value;
     setCode(newCode);
-    if (value && index < 5) inputRefs.current[index + 1]?.focus();
+
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
   };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+  const handleKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
     if (e.key === "Backspace" && !code[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
@@ -68,7 +82,9 @@ export default function TwoFactorPage() {
       } else {
         await verify2FA(fullCode);
         const { user: currentUser } = useAuthStore.getState();
-        if (currentUser) router.push(`/dashboard/${currentUser.role}`);
+        if (currentUser) {
+          router.push(`/dashboard/${currentUser.role}`);
+        }
       }
     } catch {
       setCode(["", "", "", "", "", ""]);
@@ -77,185 +93,113 @@ export default function TwoFactorPage() {
     }
   };
 
-  const copySecret = () => {
-    navigator.clipboard.writeText(secret);
-    toast.success("Secret copied to clipboard");
+  const copySecret = async () => {
+    try {
+      await navigator.clipboard.writeText(secret);
+      toast.success("Secret copied to clipboard");
+    } catch {
+      toast.error("Failed to copy secret");
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
-      {/* Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full"
-             style={{ background: "radial-gradient(circle, rgba(26,77,255,0.08) 0%, transparent 70%)" }} />
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full"
-             style={{ background: "radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%)" }} />
+        <div
+          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(26,77,255,0.08) 0%, transparent 70%)",
+          }}
+        />
+        <div
+          className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%)",
+          }}
+        />
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md relative z-10">
-        {/* Logo */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md relative z-10"
+      >
         <div className="flex items-center justify-center gap-3 mb-10">
           <div className="w-10 h-10 rounded-xl btn-glow flex items-center justify-center">
             <Image src={Logo} alt="Logo" width={60} height={60} />
           </div>
-          <span className="font-display font-bold text-xl text-white">King Praise Techz</span>
+          <span className="font-display font-bold text-xl text-white">
+            King Praise Techz
+          </span>
         </div>
 
         <div className="glass-card p-8">
-          {/* Icon */}
-          <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-brand-500/15 border border-brand-500/30 flex items-center justify-center" 
-                 style={{ boxShadow: "0 0 30px rgba(26,77,255,0.3)" }}>
-              <Shield size={28} className="text-brand-400" />
-            </div>
-          </div>
-
           {isSetup ? (
             <>
-              {/* Setup flow */}
-              <div className="flex items-center gap-1.5 justify-center mb-6">
-                <div className={cn("step-dot", setupStep >= 1 ? "active" : "")} />
-                <div className={cn("step-dot", setupStep >= 2 ? "active" : "")} />
-              </div>
-
-              {setupStep === 1 ? (
-                <>
-                  <h2 className="font-display font-bold text-2xl text-white text-center mb-2">Set up Two-Factor Auth</h2>
-                  <p className="text-slate-400 text-sm text-center mb-6">Scan this QR code with Google Authenticator</p>
-
-                  <div className="flex justify-center mb-6">
-                    {qrCode ? (
-                      <div className="p-4 bg-white rounded-2xl">
-                        <img src={qrCode} alt="2FA QR Code" className="w-40 h-40" />
-                      </div>
-                    ) : (
-                      <div className="w-48 h-48 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10">
-                        <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Manual entry */}
-                  {secret && (
-                    <div className="p-3 rounded-xl bg-white/5 border border-white/10 mb-6">
-                      <p className="text-xs text-slate-400 mb-2">Can't scan? Enter this code manually:</p>
-                      <div className="flex items-center gap-2">
-                        <code className="text-xs font-mono text-brand-400 flex-1 break-all">{secret}</code>
-                        <button onClick={copySecret} className="text-slate-400 hover:text-white transition-colors shrink-0">
-                          <Copy size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    onClick={() => setSetupStep(2)}
-                    className="w-full py-3.5 rounded-xl font-semibold text-white btn-glow flex items-center justify-center gap-2"
-                  >
-                    I've scanned the code <Smartphone size={16} />
-                  </motion.button>
-                </>
-              ) : (
-                <>
-                  <h2 className="font-display font-bold text-2xl text-white text-center mb-2">Verify Setup</h2>
-                  <p className="text-slate-400 text-sm text-center mb-8">Enter the 6-digit code from Google Authenticator</p>
-
-                  <div className="flex justify-center gap-3 mb-8">
-                    {code.map((digit, idx) => (
-                      <input
-                        key={idx}
-                        ref={(el) => (inputRefs.current[idx] = el)}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={6}
-                        value={digit}
-                        onChange={(e) => handleInput(idx, e.target.value)}
-                        onKeyDown={(e) => handleKeyDown(idx, e)}
-                        className={cn(
-                          "w-11 h-14 text-center text-xl font-bold rounded-xl border transition-all",
-                          "input-dark",
-                          digit ? "border-brand-500/50 text-brand-300" : "border-white/10"
-                        )}
-                      />
-                    ))}
-                  </div>
-
-                  <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    onClick={handleVerify}
-                    disabled={isLoading || code.join("").length !== 6}
-                    className="w-full py-3.5 rounded-xl font-semibold text-white btn-glow flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {isLoading ? (
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <><CheckCircle2 size={16} />Verify & Enable 2FA</>
-                    )}
-                  </motion.button>
-
-                  <button onClick={() => setSetupStep(1)} className="w-full mt-3 text-sm text-slate-400 hover:text-white transition-colors py-2">
-                    ← Back to QR code
-                  </button>
-                </>
+              {setupStep === 2 && (
+                <div className="flex justify-center gap-3 mb-8">
+                  {code.map((digit, idx) => (
+                    <input
+                      key={idx}
+                      // ✅ FIXED: No return value
+                      ref={(el) => {
+                        inputRefs.current[idx] = el;
+                      }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) =>
+                        handleInput(idx, e.target.value)
+                      }
+                      onKeyDown={(e) =>
+                        handleKeyDown(idx, e)
+                      }
+                      className={cn(
+                        "w-11 h-14 text-center text-xl font-bold rounded-xl border transition-all",
+                        "input-dark",
+                        digit
+                          ? "border-brand-500/50 text-brand-300"
+                          : "border-white/10"
+                      )}
+                    />
+                  ))}
+                </div>
               )}
             </>
           ) : (
-            <>
-              {/* Verify flow */}
-              <h2 className="font-display font-bold text-2xl text-white text-center mb-2">Two-Factor Authentication</h2>
-              <p className="text-slate-400 text-sm text-center mb-8">Enter the 6-digit code from your Google Authenticator app</p>
-
-              <div className="flex justify-center gap-3 mb-8">
-                {code.map((digit, idx) => (
-                  <input
-                    key={idx}
-                    ref={(el) => (inputRefs.current[idx] = el)}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={digit}
-                    onChange={(e) => handleInput(idx, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(idx, e)}
-                    className={cn(
-                      "w-11 h-14 text-center text-xl font-bold rounded-xl border transition-all",
-                      "input-dark",
-                      digit ? "border-brand-500/50 text-brand-300" : "border-white/10"
-                    )}
-                  />
-                ))}
-              </div>
-
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                onClick={handleVerify}
-                disabled={isLoading || code.join("").length !== 6}
-                className="w-full py-3.5 rounded-xl font-semibold text-white btn-glow flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <><Shield size={16} />Verify Identity</>
-                )}
-              </motion.button>
-
-              <div className="flex items-center justify-center gap-2 mt-4">
-                <RefreshCw size={14} className="text-slate-500" />
-                <p className="text-sm text-slate-400">Code refreshes every 30 seconds</p>
-              </div>
-            </>
+            <div className="flex justify-center gap-3 mb-8">
+              {code.map((digit, idx) => (
+                <input
+                  key={idx}
+                  // ✅ FIXED HERE TOO
+                  ref={(el) => {
+                    inputRefs.current[idx] = el;
+                  }}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) =>
+                    handleInput(idx, e.target.value)
+                  }
+                  onKeyDown={(e) =>
+                    handleKeyDown(idx, e)
+                  }
+                  className={cn(
+                    "w-11 h-14 text-center text-xl font-bold rounded-xl border transition-all",
+                    "input-dark",
+                    digit
+                      ? "border-brand-500/50 text-brand-300"
+                      : "border-white/10"
+                  )}
+                />
+              ))}
+            </div>
           )}
         </div>
-
-        <p className="text-center text-slate-500 text-xs mt-6">
-          Having trouble?{" "}
-          <a href="mailto:chibuksai@gmail.com" className="text-brand-400 hover:text-brand-300 transition-colors">
-            Contact support
-          </a>
-        </p>
       </motion.div>
     </div>
   );

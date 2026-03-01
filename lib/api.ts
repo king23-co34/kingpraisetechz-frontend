@@ -6,7 +6,7 @@ import axios from "axios";
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
-  "https://king-praise-techz-backend.onrender.com/api";
+  "https://king-praise-techz-backend.onrender.com//api";
 
 // ===================================
 // AXIOS CLIENT (Legacy usage)
@@ -93,7 +93,7 @@ export const projectsAPI = {
   },
   getById: (id: string) => fetchWithAuth(`/projects/${id}`),
   create: (data: any) =>
-    fetchWithAuth("/projects", { method: "POST", body: JSON.stringify(data) }),
+    fetchWithAuth("/projects/", { method: "POST", body: JSON.stringify(data) }),
   update: (id: string, data: any) =>
     fetchWithAuth(`/projects/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   delete: (id: string) =>
