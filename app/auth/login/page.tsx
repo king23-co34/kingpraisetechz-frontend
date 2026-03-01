@@ -67,6 +67,7 @@ export default function LoginPage() {
 
     try {
       const result = await login(formData.email, formData.password);
+
       if (result.requires2FA) {
         router.push("/auth/2fa");
       } else {
@@ -116,11 +117,7 @@ export default function LoginPage() {
           </div>
 
           <div className="grid grid-cols-3 gap-4">
-            {[
-              { label: "Projects", value: "200+" },
-              { label: "Clients", value: "50+" },
-              { label: "Delivered", value: "98%" },
-            ].map((stat) => (
+            {[{ label: "Projects", value: "200+" }, { label: "Clients", value: "50+" }, { label: "Delivered", value: "98%" }].map((stat) => (
               <div key={stat.label} className="glass-card p-4 text-center">
                 <p className="font-display font-bold text-2xl gradient-text">{stat.value}</p>
                 <p className="text-slate-500 text-sm mt-1">{stat.label}</p>
@@ -161,9 +158,7 @@ export default function LoginPage() {
               {step === 1 ? "Welcome back" : `Sign in as ${config?.label}`}
             </h2>
             <p className="text-slate-400">
-              {step === 1
-                ? "Choose how you'd like to sign in"
-                : "Enter your credentials to continue"}
+              {step === 1 ? "Choose how you'd like to sign in" : "Enter your credentials to continue"}
             </p>
           </motion.div>
 

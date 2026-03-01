@@ -1,8 +1,10 @@
+"use client";
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { AuthState, User, SignupData } from "@/types";
-import { apiClient } from "@/lib/api";
 import toast from "react-hot-toast";
+import { AuthState, User, SignupData } from "@/types";
+import { authAPI } from "@/lib/api";
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -20,25 +22,16 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
 
         try {
-          const { data } = await apiClient.post("/auth/login", {
-            email,
-            password,
-          });
-
+          const { data } = await authAPI.login(email, password);
           const { token, user, requires2FA, tempToken } = data;
 
-          // ---- Handle 2FA Required ----
+          // ---- 2FA Required ----
           if (requires2FA) {
             if (tempToken) {
               localStorage.setItem("tempToken", tempToken);
               localStorage.setItem("pendingUser", JSON.stringify(user));
             }
-
-            set({
-              twoFactorRequired: true,
-              isLoading: false,
-            });
-
+            set({ twoFactorRequired: true, isLoading: false });
             return { requires2FA: true };
           }
 
@@ -55,11 +48,9 @@ export const useAuthStore = create<AuthState>()(
           return { requires2FA: false };
         } catch (error: any) {
           set({ isLoading: false });
-
           const message =
             error.response?.data?.message ||
             "Login failed. Please try again.";
-
           toast.error(message);
           throw error;
         }
@@ -72,20 +63,15 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
 
         try {
-          const response = await apiClient.post("/auth/register", data);
-          const { token, user, requires2FA, tempToken } = response.data;
+          const { data: resData } = await authAPI.signup(data);
+          const { token, user, requires2FA, tempToken } = resData;
 
           if (requires2FA) {
             if (tempToken) {
               localStorage.setItem("tempToken", tempToken);
               localStorage.setItem("pendingUser", JSON.stringify(user));
             }
-
-            set({
-              twoFactorRequired: true,
-              isLoading: false,
-            });
-
+            set({ twoFactorRequired: true, isLoading: false });
             return;
           }
 
@@ -99,11 +85,9 @@ export const useAuthStore = create<AuthState>()(
           toast.success("Account created successfully!");
         } catch (error: any) {
           set({ isLoading: false });
-
           const message =
             error.response?.data?.message ||
             "Signup failed. Please try again.";
-
           toast.error(message);
           throw error;
         }
@@ -116,24 +100,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
 
         try {
-          const tempToken = localStorage.getItem("tempToken");
-
-          if (!tempToken) {
-            set({ isLoading: false });
-            toast.error("Session expired. Please login again.");
-            throw new Error("Temp token missing");
-          }
-
-          const { data } = await apiClient.post(
-            "/auth/verify-2fa",
-            { code },
-            {
-              headers: {
-                Authorization: `Bearer ${tempToken}`,
-              },
-            }
-          );
-
+          const { data } = await authAPI.verify2FA(code);
           const { token, user } = data;
 
           localStorage.removeItem("tempToken");
@@ -150,11 +117,9 @@ export const useAuthStore = create<AuthState>()(
           toast.success("Authentication successful!");
         } catch (error: any) {
           set({ isLoading: false });
-
           const message =
             error.response?.data?.message ||
             "Invalid verification code.";
-
           toast.error(message);
           throw error;
         }
@@ -182,12 +147,9 @@ export const useAuthStore = create<AuthState>()(
       // ==========================
       updateUser: (userData: Partial<User>) => {
         const currentUser = get().user;
-
         if (!currentUser) return;
 
-        set({
-          user: { ...currentUser, ...userData },
-        });
+        set({ user: { ...currentUser, ...userData } });
       },
     }),
     {

@@ -4,8 +4,23 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
- Shield, Eye, EyeOff, ArrowRight, ArrowLeft, Zap, Users, CheckCircle2, Crown,
-  Building2, Phone, Code, Palette, Globe, Database, LayoutDashboard, MessageSquare
+  Shield,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  ArrowLeft,
+  Zap,
+  Users,
+  CheckCircle2,
+  Crown,
+  Building2,
+  Phone,
+  Code,
+  Palette,
+  Globe,
+  Database,
+  LayoutDashboard,
+  MessageSquare,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { cn } from "@/lib/utils";
@@ -55,20 +70,12 @@ export default function SignupPage() {
     );
   };
 
-  const handleNext = () => {
-    if (step < totalSteps) setStep((prev) => (prev + 1) as any);
-  };
-
-  const handleBack = () => {
-    if (step > 1) {
-      setStep((prev) => (prev - 1) as any);
-    }
-  };
+  const handleNext = () => step < totalSteps && setStep((prev) => prev + 1);
+  const handleBack = () => step > 1 && setStep((prev) => prev - 1);
 
   const handleSignup = async () => {
-    if (formData.password !== formData.confirmPassword) {
-      return;
-    }
+    if (formData.password !== formData.confirmPassword) return;
+
     try {
       await signup({
         name: formData.name,
@@ -81,12 +88,16 @@ export default function SignupPage() {
       });
       router.push("/auth/2fa?setup=true");
     } catch {
-      // Error handled in store
+      // error handled in store
     }
   };
 
-  const canProceedStep2 = formData.name && formData.email && formData.password &&
-    formData.password === formData.confirmPassword && formData.password.length >= 8;
+  const canProceedStep2 =
+    formData.name &&
+    formData.email &&
+    formData.password &&
+    formData.password === formData.confirmPassword &&
+    formData.password.length >= 8;
 
   return (
     <div className="min-h-screen flex">
@@ -95,12 +106,11 @@ export default function SignupPage() {
         <div
           className="absolute inset-0"
           style={{
-            background: "radial-gradient(ellipse at 30% 40%, rgba(26,77,255,0.2) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(16,185,129,0.1) 0%, transparent 50%)",
+            background:
+              "radial-gradient(ellipse at 30% 40%, rgba(26,77,255,0.2) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(16,185,129,0.1) 0%, transparent 50%)",
           }}
         />
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-500/30 to-transparent" />
-
-        {/* Animated orbs */}
         <div className="absolute top-1/4 left-1/2 w-72 h-72 rounded-full" style={{ background: "radial-gradient(circle, rgba(26,77,255,0.08) 0%, transparent 70%)", transform: "translate(-50%, -50%)" }} />
 
         <div className="relative z-10">
@@ -123,32 +133,21 @@ export default function SignupPage() {
 
           {/* Progress steps visual */}
           <div className="space-y-3">
-            {[
-              "Choose your role",
-              "Create your account",
-              selectedRole === "team" ? "Your skills" : "Company details",
-              "Secure with 2FA",
-            ].map((stepLabel, idx) => (
+            {["Choose your role", "Create your account", selectedRole === "team" ? "Your skills" : "Company details", "Secure with 2FA"].map((label, idx) => (
               <div key={idx} className={cn("flex items-center gap-3 transition-all", idx < step - 1 ? "opacity-100" : idx === step - 1 ? "opacity-100" : "opacity-30")}>
                 <div className={cn(
                   "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border transition-all",
-                  idx < step - 1 ? "bg-emerald-500 border-emerald-500 text-white" :
-                    idx === step - 1 ? "bg-brand-500 border-brand-500 text-white" :
-                      "border-white/20 text-slate-500"
+                  idx < step - 1 ? "bg-emerald-500 border-emerald-500 text-white" : idx === step - 1 ? "bg-brand-500 border-brand-500 text-white" : "border-white/20 text-slate-500"
                 )}>
                   {idx < step - 1 ? <CheckCircle2 size={14} /> : idx + 1}
                 </div>
-                <span className={cn("text-sm font-medium", idx === step - 1 ? "text-white" : idx < step - 1 ? "text-emerald-400" : "text-slate-500")}>
-                  {stepLabel}
-                </span>
+                <span className={cn("text-sm font-medium", idx === step - 1 ? "text-white" : idx < step - 1 ? "text-emerald-400" : "text-slate-500")}>{label}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="relative z-10 text-slate-600 text-xs">
-          © 2024 King Praise Techz. All rights reserved.
-        </div>
+        <div className="relative z-10 text-slate-600 text-xs">© 2024 King Praise Techz. All rights reserved.</div>
       </div>
 
       {/* Right Panel */}
@@ -165,308 +164,62 @@ export default function SignupPage() {
           {/* Step indicators */}
           <div className="flex items-center gap-1.5 mb-8">
             {Array.from({ length: totalSteps }).map((_, idx) => (
-              <div
-                key={idx}
-                className={cn("step-dot", idx < step ? "completed" : "", idx === step - 1 ? "active" : "")}
-              />
+              <div key={idx} className={cn("step-dot", idx < step ? "completed" : "", idx === step - 1 ? "active" : "")} />
             ))}
           </div>
 
           <AnimatePresence mode="wait">
-            {/* Step 1: Role Selection */}
-            {step === 1 && (
-              <motion.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <h2 className="font-display font-bold text-3xl text-white mb-2">Create account</h2>
-                <p className="text-slate-400 mb-8">How are you joining us today?</p>
-
-                <div className="space-y-4">
-                  <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    onClick={() => handleRoleSelect("client")}
-                    className="w-full glass-card p-6 text-left border border-white/5 hover:border-brand-500/40 transition-all group card-hover"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-brand-500/10 flex items-center justify-center group-hover:bg-brand-500/20 transition-colors">
-                        <Zap size={22} className="text-brand-400" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-display font-bold text-white text-lg">I'm a Client</p>
-                        <p className="text-slate-400 text-sm mt-1">I want to hire King Praise Techz for a project and track its progress</p>
-                        <div className="flex gap-2 mt-3 flex-wrap">
-                          {["Project Tracking", "Milestones", "Reviews"].map((tag) => (
-                            <span key={tag} className="text-xs px-2 py-1 rounded-md bg-brand-500/10 text-brand-400 border border-brand-500/20">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <ArrowRight size={16} className="text-slate-500 mt-1 group-hover:text-brand-400 transition-colors" />
-                    </div>
-                  </motion.button>
-
-                  <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    onClick={() => handleRoleSelect("team")}
-                    className="w-full glass-card p-6 text-left border border-white/5 hover:border-emerald-500/40 transition-all group card-hover"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
-                        <Users size={22} className="text-emerald-400" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-display font-bold text-white text-lg">I'm a Team Member</p>
-                        <p className="text-slate-400 text-sm mt-1">I'm part of the KPT team and want to manage my tasks and projects</p>
-                        <div className="flex gap-2 mt-3 flex-wrap">
-                          {["Task Management", "Payments", "Deliverables"].map((tag) => (
-                            <span key={tag} className="text-xs px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <ArrowRight size={16} className="text-slate-500 mt-1 group-hover:text-emerald-400 transition-colors" />
-                    </div>
-                  </motion.button>
-                </div>
-
-                <div className="text-center mt-8">
-                  <p className="text-slate-400 text-sm">
-                    Already have an account?{" "}
-                    <Link href="/auth/login" className="text-brand-400 hover:text-brand-300 font-medium transition-colors">
-                      Sign in
-                    </Link>
-                  </p>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 2: Account Details */}
-            {step === 2 && (
-              <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <button onClick={handleBack} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6 text-sm">
-                  <ArrowLeft size={16} />Back
-                </button>
-
-                <div className="flex items-center gap-2 mb-6">
-                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", selectedRole === "client" ? "bg-brand-500/20" : "bg-emerald-500/20")}>
-                    {selectedRole === "client" ? <Zap size={16} className="text-brand-400" /> : <Users size={16} className="text-emerald-400" />}
-                  </div>
-                  <span className={cn("text-sm font-medium capitalize", selectedRole === "client" ? "text-brand-400" : "text-emerald-400")}>
-                    {selectedRole} account
-                  </span>
-                </div>
-
-                <h2 className="font-display font-bold text-3xl text-white mb-2">Your details</h2>
-                <p className="text-slate-400 mb-6">Tell us a bit about yourself</p>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-slate-300 block mb-2">Full Name</label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="John Adeyemi"
-                      className="input-dark w-full px-4 py-3 rounded-xl text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-300 block mb-2">Email Address</label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="john@example.com"
-                      className="input-dark w-full px-4 py-3 rounded-xl text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-300 block mb-2">Password</label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        placeholder="Min. 8 characters"
-                        className="input-dark w-full px-4 py-3 rounded-xl text-sm pr-12"
-                      />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors">
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    </div>
-                    {/* Password strength */}
-                    {formData.password && (
-                      <div className="mt-2 flex gap-1">
-                        {[1, 2, 3, 4].map((level) => (
-                          <div key={level} className={cn("h-1 flex-1 rounded-full transition-all", formData.password.length >= level * 2 + 2 ? level <= 2 ? "bg-red-500" : level === 3 ? "bg-yellow-500" : "bg-emerald-500" : "bg-white/10")} />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-300 block mb-2">Confirm Password</label>
-                    <div className="relative">
-                      <input
-                        type={showConfirmPassword ? "text" : "password"}
-                        value={formData.confirmPassword}
-                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                        placeholder="Re-enter password"
-                        className={cn("input-dark w-full px-4 py-3 rounded-xl text-sm pr-12 transition-all", formData.confirmPassword && formData.password !== formData.confirmPassword ? "border-red-500/50" : formData.confirmPassword && formData.password === formData.confirmPassword ? "border-emerald-500/50" : "")}
-                      />
-                      <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors">
-                        {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    </div>
-                    {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                      <p className="text-xs text-red-400 mt-1">Passwords do not match</p>
-                    )}
-                  </div>
-                </div>
-
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  onClick={handleNext}
-                  disabled={!canProceedStep2}
-                  className={cn("w-full mt-6 py-3.5 rounded-xl font-semibold text-white flex items-center justify-center gap-2 transition-all", "btn-glow disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none")}
-                >
-                  Continue <ArrowRight size={16} />
-                </motion.button>
-              </motion.div>
-            )}
-
-            {/* Step 3: Role-specific details */}
-            {step === 3 && (
-              <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <button onClick={handleBack} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6 text-sm">
-                  <ArrowLeft size={16} />Back
-                </button>
-
-                {selectedRole === "client" ? (
-                  <>
-                    <h2 className="font-display font-bold text-3xl text-white mb-2">Company info</h2>
-                    <p className="text-slate-400 mb-6">Optional but helps us serve you better</p>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-sm font-medium text-slate-300 block mb-2">Company / Brand Name</label>
-                        <div className="relative">
-                          <Building2 size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
-                          <input
-                            type="text"
-                            value={formData.company}
-                            onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                            placeholder="Acme Corp (optional)"
-                            className="input-dark w-full px-4 py-3 rounded-xl text-sm pl-10"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-slate-300 block mb-2">Phone Number</label>
-                        <div className="relative">
-                          <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
-                          <input
-                            type="tel"
-                            value={formData.phone}
-                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            placeholder="+234 000 000 0000 (optional)"
-                            className="input-dark w-full px-4 py-3 rounded-xl text-sm pl-10"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <h2 className="font-display font-bold text-3xl text-white mb-2">Your skills</h2>
-                    <p className="text-slate-400 mb-6">Select all that apply to you</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      {skillOptions.map((skill) => (
-                        <motion.button
-                          key={skill.id}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => toggleSkill(skill.id)}
-                          className={cn(
-                            "p-3 rounded-xl border flex items-center gap-2 text-sm font-medium transition-all",
-                            selectedSkills.includes(skill.id)
-                              ? "bg-brand-500/20 border-brand-500/50 text-brand-300"
-                              : "glass-card border-white/5 text-slate-400 hover:border-white/15 hover:text-white"
-                          )}
-                        >
-                          <span className={selectedSkills.includes(skill.id) ? "text-brand-400" : "text-slate-500"}>{skill.icon}</span>
-                          {skill.label}
-                          {selectedSkills.includes(skill.id) && <CheckCircle2 size={14} className="ml-auto text-brand-400" />}
-                        </motion.button>
-                      ))}
-                    </div>
-                  </>
-                )}
-
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  onClick={selectedRole === "team" ? handleNext : handleSignup}
-                  disabled={isLoading}
-                  className="w-full mt-6 py-3.5 rounded-xl font-semibold text-white flex items-center justify-center gap-2 btn-glow disabled:opacity-50"
-                >
-                  {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>{selectedRole === "team" ? "Continue" : "Create Account"} <ArrowRight size={16} /></>
-                  )}
-                </motion.button>
-              </motion.div>
-            )}
-
-            {/* Step 4: Team final review */}
-            {step === 4 && selectedRole === "team" && (
-              <motion.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <button onClick={handleBack} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6 text-sm">
-                  <ArrowLeft size={16} />Back
-                </button>
-                <h2 className="font-display font-bold text-3xl text-white mb-2">Almost there!</h2>
-                <p className="text-slate-400 mb-6">Review your information</p>
-
-                <div className="space-y-3 mb-6">
-                  {[
-                    { label: "Name", value: formData.name },
-                    { label: "Email", value: formData.email },
-                    { label: "Role", value: "Team Member" },
-                    { label: "Skills", value: selectedSkills.length > 0 ? selectedSkills.map(s => skillOptions.find(o => o.id === s)?.label).join(", ") : "None selected" },
-                  ].map((item) => (
-                    <div key={item.label} className="glass-card p-4 flex justify-between items-center">
-                      <span className="text-slate-400 text-sm">{item.label}</span>
-                      <span className="text-white text-sm font-medium">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-brand-500/5 border border-brand-500/20 mb-6">
-                  <Shield size={16} className="text-brand-400 mt-0.5 shrink-0" />
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    After creating your account, you'll be guided to set up Google Authenticator for Two-Factor Authentication to keep your account secure.
-                  </p>
-                </div>
-
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  onClick={handleSignup}
-                  disabled={isLoading}
-                  className="w-full py-3.5 rounded-xl font-semibold text-white flex items-center justify-center gap-2 btn-glow disabled:opacity-50"
-                >
-                  {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>Create Account <ArrowRight size={16} /></>
-                  )}
-                </motion.button>
-              </motion.div>
-            )}
+            {/* Steps */}
+            {step === 1 && <Step1 handleRoleSelect={handleRoleSelect} />}
+            {step === 2 && <Step2 formData={formData} setFormData={setFormData} showPassword={showPassword} setShowPassword={setShowPassword} selectedRole={selectedRole} handleNext={handleNext} canProceedStep2={canProceedStep2} handleBack={handleBack} />}
+            {step === 3 && <Step3 selectedRole={selectedRole} formData={formData} setFormData={setFormData} toggleSkill={toggleSkill} selectedSkills={selectedSkills} handleNext={handleNext} handleSignup={handleSignup} showPassword={showPassword} showConfirmPassword={showConfirmPassword} setShowPassword={setShowPassword} setShowConfirmPassword={setShowConfirmPassword} isLoading={isLoading} handleBack={handleBack} />}
+            {step === 4 && selectedRole === "team" && <Step4 formData={formData} selectedSkills={selectedSkills} handleSignup={handleSignup} isLoading={isLoading} handleBack={handleBack} />}
           </AnimatePresence>
         </div>
       </div>
     </div>
+  );
+}
+
+// =========================
+// Step Components
+// =========================
+
+function Step1({ handleRoleSelect }: { handleRoleSelect: (role: SignupRole) => void }) {
+  return (
+    <motion.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+      <h2 className="font-display font-bold text-3xl text-white mb-2">Create account</h2>
+      <p className="text-slate-400 mb-8">How are you joining us today?</p>
+      <div className="space-y-4">
+        <RoleCard role="client" label="I'm a Client" description="I want to hire King Praise Techz for a project and track its progress" tags={["Project Tracking", "Milestones", "Reviews"]} icon={<Zap size={22} />} color="brand" onClick={() => handleRoleSelect("client")} />
+        <RoleCard role="team" label="I'm a Team Member" description="I'm part of the KPT team and want to manage my tasks and projects" tags={["Task Management", "Payments", "Deliverables"]} icon={<Users size={22} />} color="emerald" onClick={() => handleRoleSelect("team")} />
+      </div>
+
+      <div className="text-center mt-8">
+        <p className="text-slate-400 text-sm">
+          Already have an account? <Link href="/auth/login" className="text-brand-400 hover:text-brand-300 font-medium transition-colors">Sign in</Link>
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+function RoleCard({ role, label, description, tags, icon, color, onClick }: any) {
+  return (
+    <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={onClick} className={cn("w-full glass-card p-6 text-left border border-white/5 hover:border-" + color + "-500/40 transition-all group card-hover")}>
+      <div className="flex items-start gap-4">
+        <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center transition-colors", `bg-${color}-500/10 group-hover:bg-${color}-500/20`)}>
+          {icon}
+        </div>
+        <div className="flex-1">
+          <p className="font-display font-bold text-white text-lg">{label}</p>
+          <p className="text-slate-400 text-sm mt-1">{description}</p>
+          <div className="flex gap-2 mt-3 flex-wrap">
+            {tags.map((tag: string) => <span key={tag} className={cn("text-xs px-2 py-1 rounded-md", `bg-${color}-500/10 text-${color}-400 border border-${color}-500/20`)}>{tag}</span>)}
+          </div>
+        </div>
+        <ArrowRight size={16} className={cn("text-slate-500 mt-1 group-hover:text-" + color + "-400 transition-colors")} />
+      </div>
+    </motion.button>
   );
 }
