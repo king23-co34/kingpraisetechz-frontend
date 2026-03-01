@@ -1,5 +1,3 @@
-"use client"; // Ensure this file runs only on client side
-
 import axios from "axios";
 
 // ===================================
@@ -11,7 +9,7 @@ export const API_BASE_URL =
   "https://king-praise-techz-backend.onrender.com/api";
 
 // ===================================
-// AXIOS CLIENT
+// AXIOS CLIENT (Legacy usage)
 // ===================================
 
 export const apiClient = axios.create({
@@ -22,7 +20,6 @@ export const apiClient = axios.create({
   },
 });
 
-// Add token from localStorage to every request
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const authStorage = localStorage.getItem("kpt-auth-store");
@@ -33,29 +30,14 @@ apiClient.interceptors.request.use((config) => {
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
-      } catch (err) {
-        console.warn("Failed to parse auth storage:", err);
-      }
+      } catch {}
     }
   }
   return config;
 });
 
-// Handle 401 globally
-apiClient.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    if (err.response?.status === 401 && typeof window !== "undefined") {
-      localStorage.removeItem("kpt-auth-store");
-      window.location.href = "/auth/login";
-    }
-    return Promise.reject(err);
-  }
-);
-
 // ===================================
-// HELPER FETCH FUNCTION
-// (Optional: still supports fetch-based requests)
+// AUTH FETCH WRAPPER
 // ===================================
 
 export const fetchWithAuth = async (
@@ -68,7 +50,8 @@ export const fetchWithAuth = async (
     const authStorage = localStorage.getItem("kpt-auth-store");
     if (authStorage) {
       try {
-        token = JSON.parse(authStorage)?.state?.token || null;
+        const parsed = JSON.parse(authStorage);
+        token = parsed?.state?.token || null;
       } catch {}
     }
   }
@@ -96,23 +79,96 @@ export const fetchWithAuth = async (
 };
 
 // ===================================
-// AUTH API MODULE
+// API MODULES (Refactored)
 // ===================================
 
-export const authAPI = {
-  login: (email: string, password: string) =>
-    apiClient.post("/auth/login", { email, password }),
+export const projectsAPI = {
+  getAll: (query?: Record<string, any>) => {
+    let url = "/projects";
+    if (query) {
+      const params = new URLSearchParams(query).toString();
+      url += `?${params}`;
+    }
+    return fetchWithAuth(url);
+  },
+  getById: (id: string) => fetchWithAuth(`/projects/${id}`),
+  create: (data: any) =>
+    fetchWithAuth("/projects/", { method: "POST", body: JSON.stringify(data) }),
+  update: (id: string, data: any) =>
+    fetchWithAuth(`/projects/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  delete: (id: string) =>
+    fetchWithAuth(`/projects/${id}`, { method: "DELETE" }),
+  uploadMilestone: (id: string, data: any) =>
+    fetchWithAuth(`/projects/${id}/milestones`, { method: "POST", body: JSON.stringify(data) }),
+  updateMilestone: (projectId: string, milestoneId: string, data: any) =>
+    fetchWithAuth(`/projects/${projectId}/milestones/${milestoneId}`, { method: "PUT", body: JSON.stringify(data) }),
+};
 
-  signup: (data: Record<string, any>) =>
-    apiClient.post("/auth/register", data),
+export const reviewsAPI = {
+  getAll: (query?: Record<string, any>) => {
+    let url = "/reviews";
+    if (query) {
+      const params = new URLSearchParams(query).toString();
+      url += `?${params}`;
+    }
+    return fetchWithAuth(url);
+  },
+  create: (data: any) =>
+    fetchWithAuth("/reviews", { method: "POST", body: JSON.stringify(data) }),
+  approve: (id: string) =>
+    fetchWithAuth(`/reviews/${id}/approve`, { method: "POST" }),
+  reject: (id: string) =>
+    fetchWithAuth(`/reviews/${id}/reject`, { method: "POST" }),
+};
 
-  verify2FA: (code: string) => {
-    const tempToken = typeof window !== "undefined" ? localStorage.getItem("tempToken") : null;
-    if (!tempToken) throw new Error("Temp token missing");
-    return apiClient.post(
-      "/auth/verify-2fa",
-      { code },
-      { headers: { Authorization: `Bearer ${tempToken}` } }
-    );
+export const teamAPI = {
+  getAll: (query?: Record<string, any>) => {
+    let url = "/team";
+    if (query) {
+      const params = new URLSearchParams(query).toString();
+      url += `?${params}`;
+    }
+    return fetchWithAuth(url);
+  },
+  getById: (id: string) => fetchWithAuth(`/team/${id}`),
+  promoteToAdmin: (id: string, data: any) =>
+    fetchWithAuth(`/team/${id}/promote`, { method: "POST", body: JSON.stringify(data) }),
+  revokeAdmin: (id: string) =>
+    fetchWithAuth(`/team/${id}/revoke-admin`, { method: "POST" }),
+};
+
+export const tasksAPI = {
+  getAll: (query?: Record<string, any>) => {
+    let url = "/tasks";
+    if (query) {
+      const params = new URLSearchParams(query).toString();
+      url += `?${params}`;
+    }
+    return fetchWithAuth(url);
+  },
+  update: (id: string, data: any) =>
+    fetchWithAuth(`/tasks/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+};
+
+export const notificationsAPI = {
+  getAll: (query?: Record<string, any>) => {
+    let url = "/notifications";
+    if (query) {
+      const params = new URLSearchParams(query).toString();
+      url += `?${params}`;
+    }
+    return fetchWithAuth(url);
+  },
+  markAllRead: () => fetchWithAuth("/notifications/mark-all-read", { method: "POST" }),
+};
+
+export const dashboardAPI = {
+  getStats: (query?: Record<string, any>) => {
+    let url = "/dashboard";
+    if (query) {
+      const params = new URLSearchParams(query).toString();
+      url += `?${params}`;
+    }
+    return fetchWithAuth(url);
   },
 };
