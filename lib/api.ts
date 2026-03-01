@@ -1,4 +1,5 @@
 import axios from "axios";
+import { SignupData } from "@/types";
 
 // ===================================
 // BASE URL
@@ -171,4 +172,26 @@ export const dashboardAPI = {
     }
     return fetchWithAuth(url);
   },
+};
+
+// ===================================
+// AUTH API MODULE
+// ===================================
+
+export const authAPI = {
+  login: (email: string, password: string) =>
+    fetchWithAuth("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    }),
+  signup: (data: SignupData) =>
+    fetchWithAuth("/auth/signup", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  verify2FA: (code: string) =>
+    fetchWithAuth("/auth/2fa/verify", {
+      method: "POST",
+      body: JSON.stringify({ code }),
+    }),
 };
