@@ -38,6 +38,77 @@ const skillOptions = [
   { id: "content", label: "Content", icon: <MessageSquare size={14} /> },
 ];
 
+// =========================
+// RoleCard Component (Moved above SignupPage)
+// =========================
+function RoleCard({
+  role,
+  label,
+  description,
+  tags,
+  icon,
+  color,
+  onClick,
+}: {
+  role: string;
+  label: string;
+  description: string;
+  tags: string[];
+  icon: React.ReactNode;
+  color: string;
+  onClick: () => void;
+}) {
+  return (
+    <motion.button
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
+      onClick={onClick}
+      className={cn(
+        "w-full glass-card p-6 text-left border border-white/5 hover:border-" +
+          color +
+          "-500/40 transition-all group card-hover"
+      )}
+    >
+      <div className="flex items-start gap-4">
+        <div
+          className={cn(
+            "w-12 h-12 rounded-xl flex items-center justify-center transition-colors",
+            `bg-${color}-500/10 group-hover:bg-${color}-500/20`
+          )}
+        >
+          {icon}
+        </div>
+        <div className="flex-1">
+          <p className="font-display font-bold text-white text-lg">{label}</p>
+          <p className="text-slate-400 text-sm mt-1">{description}</p>
+          <div className="flex gap-2 mt-3 flex-wrap">
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className={cn(
+                  "text-xs px-2 py-1 rounded-md",
+                  `bg-${color}-500/10 text-${color}-400 border border-${color}-500/20`
+                )}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+        <ArrowRight
+          size={16}
+          className={cn(
+            "text-slate-500 mt-1 group-hover:text-" + color + "-400 transition-colors"
+          )}
+        />
+      </div>
+    </motion.button>
+  );
+}
+
+// =========================
+// SignupPage Component
+// =========================
 export default function SignupPage() {
   const router = useRouter();
   const { signup, isLoading } = useAuthStore();
@@ -75,7 +146,6 @@ export default function SignupPage() {
 
   const handleSignup = async () => {
     if (formData.password !== formData.confirmPassword) return;
-
     try {
       await signup({
         name: formData.name,
@@ -117,9 +187,44 @@ export default function SignupPage() {
 
           <AnimatePresence mode="wait">
             {step === 1 && <Step1 handleRoleSelect={handleRoleSelect} />}
-            {step === 2 && <Step2 formData={formData} setFormData={setFormData} showPassword={showPassword} setShowPassword={setShowPassword} selectedRole={selectedRole} handleNext={handleNext} canProceedStep2={canProceedStep2} handleBack={handleBack} />}
-            {step === 3 && <Step3 selectedRole={selectedRole} formData={formData} setFormData={setFormData} toggleSkill={toggleSkill} selectedSkills={selectedSkills} handleNext={handleNext} handleSignup={handleSignup} showPassword={showPassword} showConfirmPassword={showConfirmPassword} setShowPassword={setShowPassword} setShowConfirmPassword={setShowConfirmPassword} isLoading={isLoading} handleBack={handleBack} />}
-            {step === 4 && selectedRole === "team" && <Step4 formData={formData} selectedSkills={selectedSkills} handleSignup={handleSignup} isLoading={isLoading} handleBack={handleBack} />}
+            {step === 2 && (
+              <Step2
+                formData={formData}
+                setFormData={setFormData}
+                showPassword={showPassword}
+                setShowPassword={setShowPassword}
+                selectedRole={selectedRole}
+                handleNext={handleNext}
+                canProceedStep2={canProceedStep2}
+                handleBack={handleBack}
+              />
+            )}
+            {step === 3 && (
+              <Step3
+                selectedRole={selectedRole}
+                formData={formData}
+                setFormData={setFormData}
+                toggleSkill={toggleSkill}
+                selectedSkills={selectedSkills}
+                handleNext={handleNext}
+                handleSignup={handleSignup}
+                showPassword={showPassword}
+                showConfirmPassword={showConfirmPassword}
+                setShowPassword={setShowPassword}
+                setShowConfirmPassword={setShowConfirmPassword}
+                isLoading={isLoading}
+                handleBack={handleBack}
+              />
+            )}
+            {step === 4 && selectedRole === "team" && (
+              <Step4
+                formData={formData}
+                selectedSkills={selectedSkills}
+                handleSignup={handleSignup}
+                isLoading={isLoading}
+                handleBack={handleBack}
+              />
+            )}
           </AnimatePresence>
         </div>
       </div>
@@ -128,11 +233,10 @@ export default function SignupPage() {
 }
 
 // =========================
-// Step Components (Fixed)
+// Step Components
 // =========================
 
 function Step1({ handleRoleSelect }: { handleRoleSelect: (role: SignupRole) => void }) {
-  // ...your Step1 code stays the same...
   return (
     <motion.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
       <h2 className="font-display font-bold text-3xl text-white mb-2">Create account</h2>
@@ -145,13 +249,11 @@ function Step1({ handleRoleSelect }: { handleRoleSelect: (role: SignupRole) => v
   );
 }
 
-// Step2
 function Step2({ formData, setFormData, showPassword, setShowPassword, selectedRole, handleNext, canProceedStep2, handleBack }: any) {
   return (
     <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
       <h2 className="font-display font-bold text-3xl text-white mb-2">Your Account Details</h2>
       <p className="text-slate-400 mb-8">Fill in your information to continue</p>
-      {/* Example inputs */}
       <input type="text" placeholder="Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="input" />
       <input type="email" placeholder="Email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="input mt-2" />
       <div className="flex gap-2 mt-4">
@@ -162,7 +264,6 @@ function Step2({ formData, setFormData, showPassword, setShowPassword, selectedR
   );
 }
 
-// Step3
 function Step3({ selectedRole, formData, setFormData, toggleSkill, selectedSkills, handleNext, handleSignup, showPassword, showConfirmPassword, setShowPassword, setShowConfirmPassword, isLoading, handleBack }: any) {
   return (
     <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
@@ -187,7 +288,6 @@ function Step3({ selectedRole, formData, setFormData, toggleSkill, selectedSkill
   );
 }
 
-// Step4
 function Step4({ formData, selectedSkills, handleSignup, isLoading, handleBack }: any) {
   return (
     <motion.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
